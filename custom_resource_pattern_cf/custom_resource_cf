@@ -1,0 +1,59 @@
+Resources:
+  # 1. IAM Role — what can the Lambda do?
+  MyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MyPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*        # Always need logging
+                  - s3:*          # Whatever your Lambda needs to do
+                Resource: "*"
+
+  # 2. Lambda Function — the actual logic
+  MyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.9
+      Handler: index.handler
+      Role: !GetAtt MyLambdaRole.Arn
+      Timeout: 120
+      Code:
+        ZipFile: |
+          import cfnresponse
+          
+          def handler(event, context):
+              try:
+                  if event['RequestType'] == 'Create':
+                      # Do something on stack creation
+                      pass
+                  elif event['RequestType'] == 'Update':
+                      # Do something on stack update
+                      pass
+                  elif event['RequestType'] == 'Delete':
+                      # Clean up on stack deletion
+                      pass
+                  
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {})
+
+  # 3. Custom Resource — triggers the Lambda
+  MyCustomResource:
+    Type: Custom::WhateverNameYouWant
+    Properties:
+      ServiceToken: !GetAtt MyFunction.Arn   # <-- Links to Lambda
+      # Your custom properties go here:
+      Param1: "value1"
+      Param2: !Ref SomeOtherResource
