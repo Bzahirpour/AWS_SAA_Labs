@@ -1,0 +1,47 @@
+# Define the AWS provider
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Create an IAM role that allows EC2 to assume it
+resource "aws_iam_role" "ssm_role" {
+  name = "SSMRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach the AmazonSSMManagedInstanceCore policy to the role
+resource "aws_iam_role_policy_attachment" "ssm_attach" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Create an IAM instance profile and associate it with the role
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "SSMInstanceProfile"
+  role = aws_iam_role.ssm_role.name
+}
+
+# Create the EC2 instance and assign the instance profile
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0" # Amazon Linux 2 AMI
+  instance_type = "t2.micro"
+
+  # Assign the IAM instance profile to allow SSM access
+  iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
+
+  tags = {
+    Name = "SSM-Enabled-Instance"
+  }
+}   
