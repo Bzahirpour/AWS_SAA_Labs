@@ -44,7 +44,7 @@ resource "aws_s3_bucket_policy" "test_static_site_policy" {
   })
 }
 
-resource "aws_s3_bucket_website_configuration" "test_static_site_website" {
+resource "aws_s3_bucket_website_configuration" "test_static_site_website" { # Configure the S3 bucket as a static website
   bucket = aws_s3_bucket.test_static_site.id
 
   index_document {
@@ -85,16 +85,16 @@ resource "aws_s3_object" "error" {
 }
 
 resource "aws_s3_object" "images" {
-  for_each = fileset("${local.website_files}/img", "*.jpg") #for_each is a for loop
+  for_each = fileset("${local.website_files}/img", "*.jpg") # for_each is a for loop
 
   bucket       = aws_s3_bucket.test_static_site.id
   key          = "img/${each.value}"
-  source       = "${local.website_files}/img/${each.value}" #each.value is how you access the current item when looping with for_each
+  source       = "${local.website_files}/img/${each.value}" # each.value is how you access the current item when looping with for_each
   etag         = filemd5("${local.website_files}/img/${each.value}")
   content_type = "image/jpeg"
 }
 
 output "website_url" {
   description = "Full clickable URL"
-  value       = "http://${aws_s3_bucket_website_configuration.test_static_site_website.website_endpoint}"
+  value       = "http://${aws_s3_bucket_website_configuration.test_static_site_website.website_endpoint}" # website_endpoint is an attribute of the aws_s3_bucket_website_configuration resource that returns the endpoint URL for the S3 bucket website.
 }
