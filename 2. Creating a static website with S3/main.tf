@@ -71,8 +71,8 @@ locals {
 resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.test_static_site.id
   key          = "index.html"
-  source       = "${local.website_files}/index.html"
-  etag         = filemd5("${local.website_files}/index.html")
+  source       = "${local.website_files}/index.html" 
+  etag         = filemd5("${local.website_files}/index.html") # filemd5 is a built-in Terraform function that calculates the MD5 hash of a file. This is used to ensure that the object is only updated if the content has changed.
   content_type = "text/html"
 }
 
@@ -91,7 +91,7 @@ resource "aws_s3_object" "images" {
   key          = "img/${each.value}"
   source       = "${local.website_files}/img/${each.value}" # each.value is how you access the current item when looping with for_each
   etag         = filemd5("${local.website_files}/img/${each.value}")
-  content_type = "image/jpeg"
+  content_type = "image/jpeg" 
 }
 
 output "website_url" {
