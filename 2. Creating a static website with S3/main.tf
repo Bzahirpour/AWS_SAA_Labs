@@ -7,6 +7,10 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = "us-east-1"
+}
+
 resource "aws_s3_bucket" "test_static_site" {
   bucket_prefix = "test-static-site-"
   force_destroy = true
@@ -88,10 +92,10 @@ resource "aws_s3_object" "images" {
   for_each = fileset("${local.website_files}/img", "*.jpg") # for_each is a for loop
 
   bucket       = aws_s3_bucket.test_static_site.id
-  key          = "img/${each.value}"
+  key          = "img/${each.value}" #
   source       = "${local.website_files}/img/${each.value}" # each.value is how you access the current item when looping with for_each
   etag         = filemd5("${local.website_files}/img/${each.value}")
-  content_type = "image/jpeg"
+  content_type = lookup(local.content_types, split(".", each.value)[1], "application/octet-stream") # split(".", each.value)[1] is a way to get the file extension from the filename, and lookup is used to get the corresponding content type from the local.content_types map.
 }
 
 output "website_url" {
