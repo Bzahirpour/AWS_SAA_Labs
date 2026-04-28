@@ -71,7 +71,7 @@ locals {
 resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.test_static_site.id
   key          = "index.html"
-  source       = "${local.website_files}/index.html"
+  source       = "${local.website_files}/index.html" 
   etag         = filemd5("${local.website_files}/index.html")
   content_type = "text/html"
 }
@@ -88,7 +88,7 @@ resource "aws_s3_object" "images" {
   for_each = fileset("${local.website_files}/img", "*.jpg") # for_each is a for loop
 
   bucket       = aws_s3_bucket.test_static_site.id
-  key          = "img/${each.value}"
+  key          = "img/${each.value}" #
   source       = "${local.website_files}/img/${each.value}" # each.value is how you access the current item when looping with for_each
   etag         = filemd5("${local.website_files}/img/${each.value}")
   content_type = "image/jpeg"
